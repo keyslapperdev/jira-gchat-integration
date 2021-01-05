@@ -21,7 +21,6 @@ func TestServer(t *testing.T) {
 			route := getRouter().Get(name)
 			assert.NotNilf(t, route, "No router found with name %q", name)
 		}
-
 	})
 
 	t.Run("Data receive route", func(t *testing.T) {
