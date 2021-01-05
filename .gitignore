@@ -1,3 +1,4 @@
 *.out
 *.swp
 secrets
+.loadenv
