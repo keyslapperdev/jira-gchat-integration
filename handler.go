@@ -1,21 +1,21 @@
 package main
 
 import (
-	"io/ioutil"
+	"encoding/json"
 	"net/http"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 )
 
-func getRouter() *mux.Router {
+func getRouter(jira JiraWorker) *mux.Router {
 	r := mux.NewRouter()
 
 	r.NewRoute().
 		Name("data").
 		Path("/data").
 		Methods(http.MethodPost).
-		HandlerFunc(receiveData)
+		HandlerFunc(getDataHandler(jira))
 	r.NewRoute().
 		Name("healthCheck").
 		Path("/health").
@@ -25,16 +25,31 @@ func getRouter() *mux.Router {
 	return r
 }
 
-func receiveData(rw http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(rw, "unable to parse body", http.StatusBadRequest)
-		log.Fatal("unable to parse body")
-	}
+func getDataHandler(jira JiraWorker) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		types, exist := r.Header["Content-Type"]
+		if !exist || types[0] != "application/json" {
+			http.Error(rw, "must set content type to application/json", http.StatusBadRequest)
+			return
+		}
 
-	rw.WriteHeader(http.StatusOK)
-	rw.Write(body)
-	return
+		payload := ChatPayload{}
+		json.NewDecoder(r.Body).Decode(&payload)
+
+		cleanup(&payload)
+
+		tData, err := jira.GetTicketData(payload)
+		if err != nil {
+			http.Error(rw, "Error with Jira: "+err.Error(), http.StatusInternalServerError)
+		}
+
+		spew.Dump(tData)
+
+		//card := buildChatCard(jInfo)
+		//json.NewEncoder(rw).Encode(card)
+
+		return
+	}
 }
 
 func healthCheck(rw http.ResponseWriter, r *http.Request) {
