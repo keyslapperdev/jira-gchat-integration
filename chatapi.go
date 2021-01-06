@@ -28,6 +28,7 @@ func (cs *ChatService) Authorize() {
 // CreateIssueCard takes the returned issue data and formats it into
 // a card to be sent to google chat
 func (cs ChatService) CreateIssueCard(issue *jira.Issue) (*chat.Message, error) {
+	logger.Trace("Creating Issue Card")
 
 	card := new(chat.Card)
 

@@ -43,12 +43,16 @@ func getDataHandler(jira JiraWorker, chat ChatWorker) http.HandlerFunc {
 
 		tData, err := jira.GetTicketData(payload)
 		if err != nil {
+			logger.Error("Error with Jira: " + err.Error())
 			http.Error(rw, "Error with Jira: "+err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		message, err := chat.CreateIssueCard(tData)
 		if err != nil {
+			logger.Error("Error creating card: " + err.Error())
 			http.Error(rw, "Error creating card: "+err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		json.NewEncoder(rw).Encode(message)
