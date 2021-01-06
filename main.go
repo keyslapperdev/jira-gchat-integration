@@ -3,48 +3,56 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const port = ":7070"
 
-func init() { log.SetReportCaller(true) }
+var logger = StartLogger()
 
 func main() {
-	var config = loadConfig()
-
 	var (
-		certFile    = config.certFile
-		certKeyFile = config.certKeyFile
-		useSSL      = config.useSSL
+		certFile    = os.Getenv("JIRABOT_CERT_FILE")
+		certKeyFile = os.Getenv("JIRABOT_CERT_KEY_FILE")
+		useSSL      = false
 	)
+
+	if os.Getenv("JIRABOT_USE_SSL") == "true" {
+		useSSL = true
+	}
 
 	jira := JiraService{}
 	jira.Authorize()
 
-	r := getRouter(jira)
+	chat := ChatService{}
+	chat.Authorize()
+
+	r := getRouter(jira, chat)
 
 	fmt.Println("Running on port " + port)
 
 	if useSSL {
-		log.Fatal(http.ListenAndServeTLS(port, certFile, certKeyFile, r))
+		logger.Fatal(http.ListenAndServeTLS(port, certFile, certKeyFile, r))
 	} else {
-		log.Fatal(http.ListenAndServe(port, r))
+		logger.Fatal(http.ListenAndServe(port, r))
 	}
 }
 
+// ChatPayload consumes the essential information from the data sent by
+// google chat
 type ChatPayload struct {
 	Type    string  `json:"type"`
 	Message Message `json:"message"`
 }
 
+// Message holds the arguments passed to the bot
 type Message struct {
 	Args string `json:"argumentText"`
 }
 
+// cleanup takes the provided args and pulls out the requied information
 func cleanup(cp *ChatPayload) {
 	cp.Message.Args = strings.Fields(cp.Message.Args)[0]
 

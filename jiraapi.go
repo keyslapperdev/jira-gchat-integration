@@ -18,11 +18,13 @@ type JiraService struct {
 // It's made in this way so that the authorization can happen only
 // once
 func (j *JiraService) Authorize() {
-	j.Client = getAuthdJiraClient()
+	j.Client = GetAuthdJiraClient()
 }
 
 // GetTicketData fetches data from JIRA given the id.
 func (j JiraService) GetTicketData(payload ChatPayload) (*jira.Issue, error) {
+	logger.Trace("Retrieving data from Jira")
+
 	issue, _, err := j.Issue.Get(payload.Message.Args, nil)
 	if err != nil {
 		return nil, err

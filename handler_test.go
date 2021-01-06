@@ -9,11 +9,13 @@ import (
 
 	"github.com/andygrunwald/go-jira"
 	"github.com/stretchr/testify/assert"
+	chat "google.golang.org/api/chat/v1"
 )
 
 func TestServer(t *testing.T) {
 	t.Run("Registered Routes", func(t *testing.T) {
 		mjs := MockJiraService{}
+		mcs := MockChatService{}
 
 		routeNames := []string{
 			"data",
@@ -21,21 +23,24 @@ func TestServer(t *testing.T) {
 		}
 
 		for _, name := range routeNames {
-			route := getRouter(mjs).Get(name)
+			route := getRouter(mjs, mcs).Get(name)
 			assert.NotNilf(t, route, "No router found with name %q", name)
 		}
 	})
 
 	t.Run("Data receive route", func(t *testing.T) {
-		count := 0
-		mjs := MockJiraService{&count}
+		called1 := 0
+		called2 := 0
+		mjs := MockJiraService{&called1}
+		mcs := MockChatService{&called2}
 
-		server := httptest.NewServer(http.HandlerFunc(getDataHandler(mjs)))
+		server := httptest.NewServer(http.HandlerFunc(getDataHandler(mjs, mcs)))
 		payload := `{"type": "MESSAGE", "message": { "argumentText": "xxx-1234" }}`
 
 		_, err := http.Post(server.URL, "application/json", bytes.NewBufferString(payload))
 		assert.NoError(t, err, "Error posting JSON")
 		assert.Equal(t, 1, *mjs.called, "Jira not called")
+		assert.Equal(t, 1, *mcs.called, "Chat not called")
 	})
 
 	t.Run("Health Check Route", func(t *testing.T) {
@@ -49,12 +54,16 @@ func TestServer(t *testing.T) {
 	})
 }
 
-type MockJiraService struct {
-	called *int
+type MockJiraService struct{ called *int }
+
+func (mjs MockJiraService) GetTicketData(ChatPayload) (*jira.Issue, error) {
+	*mjs.called++
+	return nil, nil
 }
 
-func (mjs MockJiraService) GetTicketData(p ChatPayload) (*jira.Issue, error) {
-	*mjs.called++
+type MockChatService struct{ called *int }
 
+func (mcs MockChatService) CreateIssueCard(*jira.Issue) (*chat.Message, error) {
+	*mcs.called++
 	return nil, nil
 }

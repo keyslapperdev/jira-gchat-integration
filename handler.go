@@ -4,18 +4,19 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/gorilla/mux"
 )
 
-func getRouter(jira JiraWorker) *mux.Router {
+func getRouter(jira JiraWorker, chat ChatWorker) *mux.Router {
+	logger.Trace("instantiating router")
+
 	r := mux.NewRouter()
 
 	r.NewRoute().
 		Name("data").
 		Path("/data").
 		Methods(http.MethodPost).
-		HandlerFunc(getDataHandler(jira))
+		HandlerFunc(getDataHandler(jira, chat))
 	r.NewRoute().
 		Name("healthCheck").
 		Path("/health").
@@ -25,8 +26,10 @@ func getRouter(jira JiraWorker) *mux.Router {
 	return r
 }
 
-func getDataHandler(jira JiraWorker) http.HandlerFunc {
+func getDataHandler(jira JiraWorker, chat ChatWorker) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
+		logger.Trace("hit on data route")
+
 		types, exist := r.Header["Content-Type"]
 		if !exist || types[0] != "application/json" {
 			http.Error(rw, "must set content type to application/json", http.StatusBadRequest)
@@ -43,16 +46,19 @@ func getDataHandler(jira JiraWorker) http.HandlerFunc {
 			http.Error(rw, "Error with Jira: "+err.Error(), http.StatusInternalServerError)
 		}
 
-		spew.Dump(tData)
+		message, err := chat.CreateIssueCard(tData)
+		if err != nil {
+			http.Error(rw, "Error creating card: "+err.Error(), http.StatusInternalServerError)
+		}
 
-		//card := buildChatCard(jInfo)
-		//json.NewEncoder(rw).Encode(card)
-
+		json.NewEncoder(rw).Encode(message)
 		return
 	}
 }
 
 func healthCheck(rw http.ResponseWriter, r *http.Request) {
+	logger.Trace("hit on health route")
+
 	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte("{}"))
 }
