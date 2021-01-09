@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"golang.org/x/oauth2"
@@ -16,13 +17,11 @@ var serviceKeyPath = os.Getenv("JIRABOT_SVC_KEY_PATH")
 // GetAuthdChatClient consumes the service key given by google to perform
 // an authorization.
 func GetAuthdChatClient() *chat.Service {
-	logger.Trace("Authorizing Chat client")
-
 	ctx := context.Background()
 
 	data, err := ioutil.ReadFile(serviceKeyPath)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	creds, err := google.CredentialsFromJSON(
@@ -31,12 +30,12 @@ func GetAuthdChatClient() *chat.Service {
 		"https://www.googleapis.com/auth/chat.bot",
 	)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	service, err := chat.New(oauth2.NewClient(ctx, creds.TokenSource))
 	if err != nil {
-		logger.Fatal("Failed to create chat service: " + err.Error())
+		log.Fatal("Failed to create chat service: " + err.Error())
 	}
 
 	return service

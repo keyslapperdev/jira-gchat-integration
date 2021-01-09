@@ -2,15 +2,42 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 const port = ":7070"
 
-var logger = StartLogger()
+var logger *logrus.Logger
+
+func init() {
+	writers := make([]io.Writer, 0)
+
+	var logFile = os.Getenv("JIRABOT_LOG_FILE")
+	if logFile != "" {
+		fd, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+		if err != nil {
+			log.Printf("Coudln't open log file: %v\nLogging to STDERR.", err)
+		} else {
+			writers = append(writers, fd)
+		}
+	}
+
+	if os.Getenv("JIRABOT_LOG_TO_CHAT") == "true" {
+		chatLW := ChatLogWriter{}
+		chatLW.Authorize()
+
+		writers = append(writers, chatLW)
+	}
+
+	logger = StartLogger(writers...)
+}
 
 func main() {
 	var (
