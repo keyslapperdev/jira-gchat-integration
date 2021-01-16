@@ -27,6 +27,8 @@ func init() {
 		} else {
 			writers = append(writers, fd)
 		}
+	} else {
+		writers = append(writers, os.Stderr)
 	}
 
 	if os.Getenv("JIRABOT_LOG_TO_CHAT") == "true" {

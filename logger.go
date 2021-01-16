@@ -13,8 +13,8 @@ import (
 // output
 var LogLevel = os.Getenv("JIRABOT_LOG_LEVEL")
 
-// ChatParentKey is a arbitrary value to maintain thread
-const ChatParentKey = "JIRABOT_THREADKEY"
+// ChatThreadKey is a arbitrary value to maintain thread
+const ChatThreadKey = "JIRABOT_THREADKEY"
 
 // ChatLogRoomID is the room the bot's logs will go to
 var ChatLogRoomID = os.Getenv("CHAT_LOG_ROOM_ID")
@@ -36,10 +36,10 @@ func (clw ChatLogWriter) Write(data []byte) (int, error) {
 		Text: string(data),
 	}
 
-	msgSvc := chat.NewSpacesMessagesService(clw.Service)
-	msgCall := msgSvc.Create(ChatParentKey, msg)
-
-	_, err := msgCall.Do()
+	_, err := chat.NewSpacesMessagesService(clw.Service).
+		Create("spaces/"+ChatLogRoomID, msg).
+		ThreadKey(ChatThreadKey).
+		Do()
 	if err != nil {
 		return 0, err
 	}
@@ -60,12 +60,7 @@ func StartLogger(writers ...io.Writer) *logrus.Logger {
 	logger.SetLevel(level)
 	logger.SetReportCaller(true)
 
-	if len(writers) > 0 {
-		mw := io.MultiWriter(writers...)
-		logger.SetOutput(mw)
-	} else {
-		logger.SetOutput(os.Stderr)
-	}
+	logger.SetOutput(io.MultiWriter(writers...))
 
 	return logger
 }
