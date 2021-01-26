@@ -3,7 +3,7 @@
 def pipeline = new hostgator.v1.Pipeline(this)
 def os_util = new common.v1.OsUtil(this)
 
-def configMap = [appName: 'hgnotify',
+def configMap = [appName: 'jirabot',
                     gchatNotifications: [
                       room: 'https://chat.googleapis.com/v1/spaces/AAAARQ66BnQ/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=3hUfDafi6WcUFT6R3szJSk3m3sMwOI6sxi8VyAbrVd4%3D&threadKey=jenkins'
                     ]
@@ -18,7 +18,7 @@ pipeline.hg(configMap){
     stage('Build Image') {
         openshift.withCluster(){
             openshift.withProject(){
-                openshift.raw( 'rollout latest dc/hgnotify-dev')
+                openshift.raw( 'rollout latest dc/jirabot')
              }
         }
         os_util.buildImage( 5 )
