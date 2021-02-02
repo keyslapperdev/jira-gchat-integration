@@ -39,10 +39,17 @@ func (cs ChatService) CreateIssueCard(issue *jira.Issue) (*chat.Message, error) 
 		Subtitle: issue.Key,
 	}
 
+	// Assignee is nil if unassigned, so it'll bork if I just
+	// call the object, which is annoying.
+	assignee := "Unassigned"
+	if issue.Fields.Assignee != nil {
+		assignee = issue.Fields.Assignee.DisplayName
+	}
+
 	// The peek data I'd like to include
 	text := &chat.TextParagraph{
 		Text: fmt.Sprintf(`<b>Assignee</b>: %s<br><b>Reporter</b>: %s<br><b>Type</b>: %s<br><b>Status</b>: %s<br>`,
-			issue.Fields.Assignee.DisplayName,
+			assignee,
 			issue.Fields.Reporter.DisplayName,
 			issue.Fields.Type.Name,
 			issue.Fields.Status.Name,
