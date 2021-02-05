@@ -56,11 +56,11 @@ func getDataHandler(jira JiraWorker, chat ChatWorker) http.HandlerFunc {
 			logger.Error("Error with Jira: " + err.Error())
 
 			if strings.Contains(err.Error(), "permission") {
-				http.Error(rw, fmt.Sprintf(`{"text": "My apologies, my jira user (svcjirahgeng) doesn't have access to view this ticket (%s).\nIf possible, please authorize me to view it better use out of me."}`, payload.Message.Args), http.StatusForbidden)
+				http.Error(rw, fmt.Sprintf(`{"text": "My apologies, my jira user (svcjirahgeng) doesn't have access to view this ticket (%s).\nIf possible, please authorize me to view it better use out of me."}`, payload.Message.Args), http.StatusOK)
 			} else if strings.Contains(err.Error(), "Not Exist") {
-				http.Error(rw, fmt.Sprintf(`{"text": "The requested ticket %s does not seem to exist."}`, payload.Message.Args), http.StatusNotFound)
+				http.Error(rw, fmt.Sprintf(`{"text": "The requested ticket %s does not seem to exist."}`, payload.Message.Args), http.StatusOK)
 			} else {
-				http.Error(rw, fmt.Sprintf(`{"text": "Jira: %s\nPlease contact %s with a paste of this error for assistance."}`, err.Error(), Maintainer), http.StatusInternalServerError)
+				http.Error(rw, fmt.Sprintf(`{"text": "Jira: %s\nPlease contact %s with a paste of this error for assistance."}`, err.Error(), Maintainer), http.StatusOK)
 			}
 
 			return
