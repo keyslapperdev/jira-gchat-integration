@@ -46,7 +46,7 @@ func getDataHandler(jira JiraWorker, chat ChatWorker) http.HandlerFunc {
 		tID := getTicketID(payload)
 
 		if tID == "" {
-			logger.Info("bad data provided")
+			logger.Infof("bad data provided: %s", payload.Message.Text)
 			http.Error(rw, fmt.Sprintf(`{"text": "[!] Please enter a vaild Jira ticket id %s"}`, usage()), http.StatusOK)
 
 			return
