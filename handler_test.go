@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +14,8 @@ import (
 )
 
 func TestServer(t *testing.T) {
+	BotName = "@ABCBOT"
+
 	t.Run("Registered Routes", func(t *testing.T) {
 		mjs := MockJiraService{}
 		mcs := MockChatService{}
@@ -35,7 +38,7 @@ func TestServer(t *testing.T) {
 		mcs := MockChatService{&called2}
 
 		server := httptest.NewServer(http.HandlerFunc(getDataHandler(mjs, mcs)))
-		payload := `{"type": "MESSAGE", "message": { "text": "@Jira xxx-1234" }}`
+		payload := fmt.Sprintf(`{"type": "MESSAGE", "message": { "text": "%s xxx-1234" }}`, BotName)
 
 		_, err := http.Post(server.URL, "application/json", bytes.NewBufferString(payload))
 		assert.NoError(t, err, "Error posting JSON")
