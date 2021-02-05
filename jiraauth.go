@@ -9,7 +9,7 @@ import (
 var jiraAuthUser = os.Getenv("JIRABOT_AUTH_USER")
 var jiraAuthPass = os.Getenv("JIRABOT_AUTH_PASS")
 
-var jiraBaseURL = os.Getenv("JIRABOT_BASE_URL")
+var jiraBaseURL = os.Getenv("JIRA_BASE_URL")
 
 // GetAuthdJiraClient takes env data to authorize a session
 // for jira -- in the future I plan to not use basic auth, but

@@ -4,24 +4,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
 )
 
+// Maintainer would be the name of ... me, it's just me. :(
 const Maintainer = "Alexander Wilcots (alexander.wilcots@endurance.com)"
+
+// BaseRoute contains the base route for the bot, i.e. /api/v1/
+var BaseRoute = os.Getenv("BASE_ROUTE")
 
 func getRouter(jira JiraWorker, chat ChatWorker) *mux.Router {
 	logger.Trace("instantiating router")
 
 	r := mux.NewRouter()
+	s := r.PathPrefix(BaseRoute).Subrouter()
 
-	r.NewRoute().
+	s.NewRoute().
 		Name("data").
 		Path("/data").
 		Methods(http.MethodPost).
 		HandlerFunc(getDataHandler(jira, chat))
-	r.NewRoute().
+	s.NewRoute().
 		Name("healthCheck").
 		Path("/health").
 		Methods(http.MethodGet).
