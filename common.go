@@ -24,7 +24,12 @@ type Message struct {
 // GetTicketID Reads the payload and returns the
 func getTicketID(payload ChatPayload) string {
 	botIdx := strings.Index(payload.Message.Text, BotName)
-	ticketID := strings.Fields(payload.Message.Text[botIdx:])[1]
+	args := strings.Fields(payload.Message.Text[botIdx:])
+
+	ticketID := ""
+	if len(args) > 1 {
+		ticketID = args[1]
+	}
 
 	return regexp.MustCompile(`[a-zA-Z]+-\d+`).FindString(ticketID)
 }

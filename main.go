@@ -66,3 +66,7 @@ func main() {
 		logger.Fatal(http.ListenAndServe(port, r))
 	}
 }
+
+func usage() string {
+	return fmt.Sprintf("```Usage: %s <Ticket-ID>\n\nNote:\n\nThe user used to grab the tickets is svcjirahgeng, it's possible that the ticket could have access restricted to certain users or groups. If you'd like to allow the bot to have access to your tickets you would need to contact your jira/project administrator to get that fixed.```", BotName)
+}

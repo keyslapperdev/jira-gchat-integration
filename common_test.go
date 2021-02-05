@@ -30,12 +30,17 @@ func TestGetTicketID(t *testing.T) {
 			text:     fmt.Sprintf("Use it like this %s %s, calling the bot then giving it a ticket", BotName, wantedID),
 		},
 		{
-			name:     "Return only first ticket",
+			name:     "Return only first ID",
 			wantedID: wantedID,
 			text:     fmt.Sprintf("Use it like this %s %s %s, calling the bot then giving it a ticket", BotName, wantedID, "BAD-420"),
 		},
 		{
-			name:     "Return nothing if no ticket name present",
+			name:     "Return black if only called bot",
+			wantedID: "",
+			text:     fmt.Sprintf("%s", BotName),
+		},
+		{
+			name:     "Return blank if no ID present in text",
 			wantedID: "",
 			text:     fmt.Sprintf("Use it like this %s calling the bot then giving it a ticket", BotName),
 		},
