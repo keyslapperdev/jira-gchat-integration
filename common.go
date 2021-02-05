@@ -31,5 +31,5 @@ func getTicketID(payload ChatPayload) string {
 		ticketID = args[1]
 	}
 
-	return regexp.MustCompile(`[a-zA-Z]+-\d+`).FindString(ticketID)
+	return regexp.MustCompile(`[^\W_]+-\d+`).FindString(ticketID)
 }
