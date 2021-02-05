@@ -6,7 +6,7 @@ import (
 
 // JiraWorker words
 type JiraWorker interface {
-	GetTicketData(ChatPayload) (*jira.Issue, error)
+	GetTicketData(string) (*jira.Issue, error)
 }
 
 // JiraService is a wrapper for jira.Client
@@ -22,10 +22,10 @@ func (j *JiraService) Authorize() {
 }
 
 // GetTicketData fetches data from JIRA given the id.
-func (j JiraService) GetTicketData(payload ChatPayload) (*jira.Issue, error) {
+func (j JiraService) GetTicketData(id string) (*jira.Issue, error) {
 	logger.Trace("Retrieving data from Jira")
 
-	issue, _, err := j.Issue.Get(payload.Message.Args, nil)
+	issue, _, err := j.Issue.Get(id, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -35,7 +35,7 @@ func TestServer(t *testing.T) {
 		mcs := MockChatService{&called2}
 
 		server := httptest.NewServer(http.HandlerFunc(getDataHandler(mjs, mcs)))
-		payload := `{"type": "MESSAGE", "message": { "argumentText": "xxx-1234" }}`
+		payload := `{"type": "MESSAGE", "message": { "text": "@Jira xxx-1234" }}`
 
 		_, err := http.Post(server.URL, "application/json", bytes.NewBufferString(payload))
 		assert.NoError(t, err, "Error posting JSON")
@@ -56,7 +56,7 @@ func TestServer(t *testing.T) {
 
 type MockJiraService struct{ called *int }
 
-func (mjs MockJiraService) GetTicketData(ChatPayload) (*jira.Issue, error) {
+func (mjs MockJiraService) GetTicketData(string) (*jira.Issue, error) {
 	*mjs.called++
 	return nil, nil
 }

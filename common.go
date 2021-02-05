@@ -1,11 +1,13 @@
 package main
 
 import (
+	"os"
 	"regexp"
 	"strings"
-
-	"github.com/davecgh/go-spew/spew"
 )
+
+// BotName is the name of the bot
+var BotName = os.Getenv("JIRABOT_BOT_NAME")
 
 // ChatPayload consumes the essential information from the data sent by
 // google chat
@@ -14,20 +16,15 @@ type ChatPayload struct {
 	Message Message `json:"message"`
 }
 
-// Message holds the arguments passed to the bot
+// Message holds the text passed to the bot
 type Message struct {
-	Args string `json:"argumentText"`
+	Text string `json:"text"`
 }
 
-// cleanup takes the provided args and pulls out the requied information
-func cleanup(cp *ChatPayload) {
-	cp.Message.Args = strings.Fields(cp.Message.Args)[0]
+// GetTicketID Reads the payload and returns the
+func getTicketID(payload ChatPayload) string {
+	botIdx := strings.Index(payload.Message.Text, BotName)
+	ticketID := strings.Fields(payload.Message.Text[botIdx:])[1]
 
-	// Removes any extra characters from the end of the ticket
-	re := regexp.MustCompile(`\D$`)
-	for re.MatchString(cp.Message.Args) {
-		cp.Message.Args = string(cp.Message.Args[:len(cp.Message.Args)-1])
-	}
-
-	spew.Dump(cp.Message.Args)
+	return regexp.MustCompile(`[a-zA-Z]+-\d+`).FindString(ticketID)
 }

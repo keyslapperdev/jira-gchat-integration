@@ -43,22 +43,23 @@ func getDataHandler(jira JiraWorker, chat ChatWorker) http.HandlerFunc {
 		payload := ChatPayload{}
 		json.NewDecoder(r.Body).Decode(&payload)
 
-		cleanup(&payload)
-		if payload.Message.Args == "" {
+		tID := getTicketID(payload)
+
+		if tID == "" {
 			logger.Info("bad data provided")
 			http.Error(rw, `{"text": "Please enter a vaild Jira ticket id"}`, http.StatusOK)
 
 			return
 		}
 
-		tData, err := jira.GetTicketData(payload)
+		tData, err := jira.GetTicketData(tID)
 		if err != nil {
 			logger.Error("Error with Jira: " + err.Error())
 
 			if strings.Contains(err.Error(), "permission") {
-				http.Error(rw, fmt.Sprintf(`{"text": "My apologies, my jira user (svcjirahgeng) doesn't have access to view this ticket (%s).\nIf possible, please authorize me to view it better use out of me."}`, payload.Message.Args), http.StatusOK)
+				http.Error(rw, fmt.Sprintf(`{"text": "My apologies, my jira user (svcjirahgeng) doesn't have access to view this ticket (%s).\nIf possible, please authorize me to view it better use out of me."}`, tID), http.StatusOK)
 			} else if strings.Contains(err.Error(), "Not Exist") {
-				http.Error(rw, fmt.Sprintf(`{"text": "The requested ticket %s does not seem to exist."}`, payload.Message.Args), http.StatusOK)
+				http.Error(rw, fmt.Sprintf(`{"text": "The requested ticket %s does not seem to exist."}`, tID), http.StatusOK)
 			} else {
 				http.Error(rw, fmt.Sprintf(`{"text": "Jira: %s\nPlease contact %s with a paste of this error for assistance."}`, err.Error(), Maintainer), http.StatusOK)
 			}
