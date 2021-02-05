@@ -40,16 +40,16 @@ func getDataHandler(jira JiraWorker, chat ChatWorker) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		logger.Trace("hit on data route")
 
-		types, exist := r.Header["Content-Type"]
-		if !exist || types[0] != "application/json" {
-			http.Error(rw, "must set content type to application/json", http.StatusBadRequest)
-			return
-		}
-
 		payload := ChatPayload{}
 		json.NewDecoder(r.Body).Decode(&payload)
 
 		cleanup(&payload)
+		if payload.Message.Args == "" {
+			logger.Info("bad data provided")
+			http.Error(rw, `{"text": "Please enter a vaild Jira ticket id"}`, http.StatusOK)
+
+			return
+		}
 
 		tData, err := jira.GetTicketData(payload)
 		if err != nil {
